@@ -1,0 +1,207 @@
+#%RAML 0.8
+---
+title: "JHipster: RAML example"
+#baseUri: http://localhost:8080/services/app/rest
+baseUri: http://mocksvc.mulesoft.com/mocks/b1f4d206-195f-4cc3-85d2-5945bcd46a4c
+version: v1
+schemas:
+  - userDTO: |
+      {  "$schema": "http://json-schema.org/draft-03/schema",
+         "type": "object",
+         "description": "User DTO",
+         "properties": {
+           "login":  { "type": "string", "required": true },
+           "password":  { "type": "string", "required": true },
+           "firstName":  { "type": "string" },
+           "lastName":  { "type": "string", "required": true },
+           "email":  { "type": "string", "required": true },
+           "langKey":  { "type": "string", "required": true },
+           "roles":  {
+              "type": "array",
+              "items": { "type": "string" }
+           }
+         }
+      }
+  - loggerDTO: |
+      {  "$schema": "http://json-schema.org/draft-03/schema",
+         "type": "object",
+         "description": "Logger DTO",
+         "properties": {
+           "name":  { "type": "string", "required": true },
+           "level":  { "type": "string", "required": true }
+         }
+      }
+  - loggerDTOs: |
+      {  "$schema": "http://json-schema.org/draft-04/schema",
+         "type": "array",
+         "description": "A array of logger events",
+         "items": { "$ref": "loggerDTO" }
+      }      
+  - auditEvent: |
+      {  "$schema": "http://json-schema.org/draft-03/schema",
+         "type": "object",
+         "description": "Logger DTO",
+         "properties": {
+           "timestamp":  { "type": "date-time", "required": true },
+           "principal":  { "type": "string", "required": true },
+           "type":  { "type": "string", "required": true },
+           "data":	{ "type" : "object", "additionalProperties" : true }
+         }
+      }
+  - auditEvents: |
+      {  "$schema": "http://json-schema.org/draft-04/schema",
+         "type": "array",
+         "description": "A array of audit events",
+         "items": { "$ref": "auditEvent" }
+      }
+  - persistentToken: |
+      {  "$schema": "http://json-schema.org/draft-03/schema",
+         "type": "object",
+         "description": "Persistent token",
+         "properties": {
+           "ipAddress":  { "type": "string", "required": true },
+           "userAgent":  { "type": "string", "required": true },
+           "series":  { "type": "string", "required": true },
+           "formattedTokenDate":  { "type": "string", "required": true }
+         }
+      }
+  - persistentTokens: |
+      {  "$schema": "http://json-schema.org/draft-04/schema",
+         "type": "array",
+         "description": "A array of persistent tokens",
+         "items": { "$ref": "persistentToken" }
+      }
+traits:
+  - secured:
+      description: Require authentication
+            
+/account:
+  is: [secured]
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            schema: userDTO
+      500:
+        description: Internal server error      
+  post:
+    body:
+      application/json:
+        schema: userDTO     
+    responses:
+      200:
+        description: ok                 
+  /change_password:
+    post:
+      body:
+        application/json:
+          example: 1234
+      responses:
+        200:
+          description: ok
+        403:
+          description: forbidden
+  /sessions:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: persistentTokens  
+        500:
+          description: Internal server error   
+    /{series}:
+      delete:
+        responses:
+          200:
+            description: ok
+/activate:
+  is: [secured]
+  get:
+    queryParameters:
+      key:
+        displayName: Key
+        type: string
+        required: true       
+    responses:
+      200:
+        body:
+          text/plain:
+            example: yes    
+      500:
+        description: Internal server error          
+/authenticate:
+  get:
+    responses:
+      200:
+        description: ok
+        body:
+          text/plain:
+            example: user            
+/register:
+  post:
+    body:
+      application/json:
+        schema: userDTO        
+    responses:
+      201:
+        description: user created
+      304:
+        description: user already exists
+/audits:
+  is: [secured]
+  /all:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: auditEvents
+  /byDates:
+    get:
+      queryParameters:
+        fromDate:
+          displayName: fromDate
+          type: date
+          required: true       
+        toDate:
+          displayName: toDate
+          type: date
+          required: true       
+      responses:
+        200:
+          body:
+            application/json:
+              schema: auditEvents        
+/logs:
+  is: [secured]
+  get:
+    description:
+      getList
+    responses:
+      200:
+        body:
+          application/json:
+            schema: loggerDTOs
+  put:
+    description:
+      changeLevel
+    body:
+      application/json:
+        schema: loggerDTO        
+    responses:
+      200:
+        description: ok
+/users:
+  is: [secured]
+  /{login}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: userDTO
+        404:
+          description: Not found
+              
