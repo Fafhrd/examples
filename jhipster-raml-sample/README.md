@@ -40,5 +40,5 @@ and navigate to [localhost:8080][localhost].
 
 [jhipster-installation]: https://jhipster.github.io/installation.html
 [localhost]: http://localhost:8080
-[blog-post]: http://www.greenbird.com/blog/
+[blog-post]: http://www.greenbird.com/2014/10/26/raml-webapp-experiments/
 [raml-jaxrs-codegen]: https://github.com/mulesoft/raml-jaxrs-codegen
